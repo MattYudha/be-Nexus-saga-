@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{DCFD878E-6D0A-4257-80AE-D21DD76D6D14}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotonBackend.Api", "src\PhotonBackend.Api\PhotonBackend.Api.csproj", "{3BA26816-0BD5-49F2-B25A-456DF3D60A4B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{D689749A-C15E-48F0-B2E6-7A2082F97412}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotonBackend.Tests", "tests\PhotonBackend.Tests\PhotonBackend.Tests.csproj", "{EB0012CF-3D4B-4BF3-8734-EF89800001B6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3BA26816-0BD5-49F2-B25A-456DF3D60A4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BA26816-0BD5-49F2-B25A-456DF3D60A4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BA26816-0BD5-49F2-B25A-456DF3D60A4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BA26816-0BD5-49F2-B25A-456DF3D60A4B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB0012CF-3D4B-4BF3-8734-EF89800001B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB0012CF-3D4B-4BF3-8734-EF89800001B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB0012CF-3D4B-4BF3-8734-EF89800001B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB0012CF-3D4B-4BF3-8734-EF89800001B6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3BA26816-0BD5-49F2-B25A-456DF3D60A4B} = {DCFD878E-6D0A-4257-80AE-D21DD76D6D14}
+		{EB0012CF-3D4B-4BF3-8734-EF89800001B6} = {D689749A-C15E-48F0-B2E6-7A2082F97412}
+	EndGlobalSection
+EndGlobal

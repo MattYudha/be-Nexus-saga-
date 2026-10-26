@@ -1,0 +1,10 @@
+﻿# Secrets
+.env
+# .NET
+bin/
+obj/
+*.user
+TestResults/
+.DS_Store
+.idea/
+.vscode/

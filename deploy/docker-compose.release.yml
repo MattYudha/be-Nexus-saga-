@@ -1,0 +1,53 @@
+# Compose file shipped in GitHub Releases: runs the prebuilt API image instead of building from source.
+#   cp .env.example .env     # fill in every value, API_IMAGE is already set to this release
+#   docker compose --profile tls up -d
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-pong}
+      POSTGRES_USER: ${POSTGRES_USER:-pong}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    image: ${API_IMAGE:?set API_IMAGE in .env}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__Default: Host=db;Port=5432;Database=${POSTGRES_DB:-pong};Username=${POSTGRES_USER:-pong};Password=${POSTGRES_PASSWORD}
+      Jwt__Secret: ${JWT_SECRET:?set JWT_SECRET in .env (>= 32 chars)}
+      Photon__WebhookSecret: ${PHOTON_WEBHOOK_SECRET:?set PHOTON_WEBHOOK_SECRET in .env}
+      Photon__AuthSecret: ${PHOTON_AUTH_SECRET:?set PHOTON_AUTH_SECRET in .env}
+    ports:
+      - "127.0.0.1:${API_PORT:-8080}:8080"
+
+  caddy:
+    profiles: ["tls"]
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?set API_DOMAIN in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:
