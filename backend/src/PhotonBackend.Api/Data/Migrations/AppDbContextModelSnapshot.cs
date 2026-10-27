@@ -80,6 +80,15 @@ namespace PhotonBackend.Api.Data.Migrations
                     b.Property<int>("RatingDelta")
                         .HasColumnType("integer");
 
+                    b.Property<int>("ReportedAssists")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ReportedDeaths")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ReportedKills")
+                        .HasColumnType("integer");
+
                     b.Property<int?>("ReportedScoreLeft")
                         .HasColumnType("integer");
 
@@ -105,8 +114,17 @@ namespace PhotonBackend.Api.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int>("AccountXp")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Assists")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Deaths")
+                        .HasColumnType("integer");
 
                     b.Property<string>("DeviceId")
                         .HasMaxLength(128)
@@ -118,6 +136,9 @@ namespace PhotonBackend.Api.Data.Migrations
                         .HasColumnType("character varying(24)");
 
                     b.Property<int>("Faction")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Kills")
                         .HasColumnType("integer");
 
                     b.Property<int>("Losses")

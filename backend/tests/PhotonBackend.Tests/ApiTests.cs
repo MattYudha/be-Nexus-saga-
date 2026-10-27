@@ -178,8 +178,10 @@ public class ApiTests(ApiFactory factory) : IClassFixture<ApiFactory>
         var me = await client.GetFromJsonAsync<JsonElement>("/api/me");
         Assert.Equal("acct_alice", me.GetProperty("username").GetString());
         Assert.Equal("AliceA", me.GetProperty("displayName").GetString());
-        Assert.Equal("Silver", me.GetProperty("rankTier").GetString()); // start 1500 = Silver
+        Assert.Equal("Rival", me.GetProperty("rankTier").GetString());       // start 1500 = Rival (doc 24)
+        Assert.Equal("Trainee", me.GetProperty("accountRank").GetString());  // 0 XP
         Assert.Equal(0, me.GetProperty("matchesPlayed").GetInt32());
+        Assert.Equal(0, me.GetProperty("kills").GetInt32());
         Assert.Equal(0, me.GetProperty("faction").GetInt32());
     }
 
@@ -219,6 +221,28 @@ public class ApiTests(ApiFactory factory) : IClassFixture<ApiFactory>
         Assert.Equal(HttpStatusCode.OK, res.StatusCode);
         var me = await client.GetFromJsonAsync<JsonElement>("/api/me");
         Assert.Equal(1, me.GetProperty("faction").GetInt32());
+    }
+
+    [Fact]
+    public async Task MatchReport_AccumulatesKillsDeathsKdaAndXp()
+    {
+        var (alice, _) = await factory.LoginAsync("device-stat-alice", "StatAlice");
+        var (bob, _) = await factory.LoginAsync("device-stat-bob", "StatBob");
+
+        await alice.PostAsJsonAsync("/api/matches/result", new { gameId = "room-stat", slot = 0, scoreLeft = 5, scoreRight = 2, kills = 5, deaths = 2, assists = 1 });
+        var r2 = await bob.PostAsJsonAsync("/api/matches/result", new { gameId = "room-stat", slot = 1, scoreLeft = 5, scoreRight = 2, kills = 2, deaths = 5, assists = 0 });
+        Assert.Equal("Finished", (await r2.Content.ReadFromJsonAsync<JsonElement>(Web)).GetProperty("status").GetString());
+
+        var meA = await alice.GetFromJsonAsync<JsonElement>("/api/me");
+        Assert.Equal(5, meA.GetProperty("kills").GetInt32());
+        Assert.Equal(2, meA.GetProperty("deaths").GetInt32());
+        Assert.Equal(1, meA.GetProperty("wins").GetInt32());
+        Assert.Equal(3.0, meA.GetProperty("kda").GetDouble());          // (5+1)/2
+        Assert.True(meA.GetProperty("accountXp").GetInt32() >= 100);    // menang → +100
+
+        var meB = await bob.GetFromJsonAsync<JsonElement>("/api/me");
+        Assert.Equal(2, meB.GetProperty("kills").GetInt32());
+        Assert.Equal(5, meB.GetProperty("deaths").GetInt32());
     }
 
     [Fact]

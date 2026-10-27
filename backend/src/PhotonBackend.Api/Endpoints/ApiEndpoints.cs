@@ -13,7 +13,7 @@ public sealed record GuestLoginRequest(string? DeviceId, string? DisplayName);
 public sealed record RegisterRequest(string? Username, string? Password, string? DisplayName);
 public sealed record LoginRequest(string? Username, string? Password);
 public sealed record FactionRequest(int Faction);
-public sealed record ReportResultRequest(string? GameId, int Slot, int ScoreLeft, int ScoreRight);
+public sealed record ReportResultRequest(string? GameId, int Slot, int ScoreLeft, int ScoreRight, int Kills = 0, int Deaths = 0, int Assists = 0);
 public sealed record JoinQueueRequest(string? Region);
 
 /// <summary>REST API used by the Unity client.</summary>
@@ -189,6 +189,8 @@ public static class ApiEndpoints
 
         int matches = p.Wins + p.Losses;
         double winRate = matches > 0 ? Math.Round(100.0 * p.Wins / matches, 1) : 0.0;
+        double kda = Math.Round((p.Kills + p.Assists) / (double)Math.Max(1, p.Deaths), 2);
+        int level = Ranks.LevelFor(p.AccountXp);
         return Results.Ok(new
         {
             playerId = p.Id,
@@ -196,11 +198,18 @@ public static class ApiEndpoints
             displayName = p.DisplayName,
             faction = p.Faction,
             rating = p.Rating,
-            rankTier = Ranks.TierFor(p.Rating),
+            rankTier = Ranks.TierFor(p.Rating),      // ladder Solo 1v1
+            accountLevel = level,
+            accountRank = Ranks.AccountRankFor(level), // Trainee→Colonel
+            accountXp = p.AccountXp,
             wins = p.Wins,
             losses = p.Losses,
             matchesPlayed = matches,
             winRate,
+            kills = p.Kills,
+            deaths = p.Deaths,
+            assists = p.Assists,
+            kda,
             createdAt = p.CreatedAt,
         });
     }
@@ -244,7 +253,8 @@ public static class ApiEndpoints
         if (gameId.Length is < 1 or > 128)
             return Results.BadRequest(new { error = "gameId must be 1-128 characters." });
 
-        var outcome = await matches.ReportAsync(gameId, PlayerId(user), req.Slot, req.ScoreLeft, req.ScoreRight, ct);
+        var outcome = await matches.ReportAsync(gameId, PlayerId(user), req.Slot, req.ScoreLeft, req.ScoreRight,
+                                                req.Kills, req.Deaths, req.Assists, ct);
         var body = new { status = outcome.Status.ToString(), message = outcome.Message };
         return outcome.Status switch
         {

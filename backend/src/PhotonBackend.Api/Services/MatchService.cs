@@ -60,7 +60,8 @@ public sealed class MatchService(AppDbContext db, IOptions<GameOptions> options)
     }
 
     public async Task<ReportOutcome> ReportAsync(
-        string gameId, Guid playerId, int slot, int scoreLeft, int scoreRight, CancellationToken ct)
+        string gameId, Guid playerId, int slot, int scoreLeft, int scoreRight,
+        int kills, int deaths, int assists, CancellationToken ct)
     {
         if (!IsLegalResult(slot, scoreLeft, scoreRight))
             return new ReportOutcome(ReportStatus.Invalid, "Not a legal Pong result.");
@@ -87,6 +88,9 @@ public sealed class MatchService(AppDbContext db, IOptions<GameOptions> options)
             mine.Slot = slot;
             mine.ReportedScoreLeft = scoreLeft;
             mine.ReportedScoreRight = scoreRight;
+            mine.ReportedKills = Math.Max(0, kills);
+            mine.ReportedDeaths = Math.Max(0, deaths);
+            mine.ReportedAssists = Math.Max(0, assists);
 
             var reported = match.Players.Where(p => p.ReportedScoreLeft.HasValue).ToList();
             if (reported.Count < 2)
@@ -145,6 +149,12 @@ public sealed class MatchService(AppDbContext db, IOptions<GameOptions> options)
         l.Rating = Math.Max(0, (int)Math.Round(lNew.Rating)); l.Rd = lNew.Rd; l.Volatility = lNew.Volatility;
         w.Wins++;
         l.Losses++;
+
+        // Akumulasi statistik tempur (tiap pemain lapor miliknya sendiri) + XP akun.
+        w.Kills += winner.ReportedKills; w.Deaths += winner.ReportedDeaths; w.Assists += winner.ReportedAssists;
+        l.Kills += loser.ReportedKills; l.Deaths += loser.ReportedDeaths; l.Assists += loser.ReportedAssists;
+        w.AccountXp += 100; // menang
+        l.AccountXp += 60;  // kalah (partisipasi, biar Account Rank tetap naik)
 
         winner.IsWinner = true;
         winner.RatingDelta = w.Rating - wBefore;

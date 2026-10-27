@@ -13,6 +13,10 @@ public sealed class Player
     public double Volatility { get; set; } = 0.06; // Glicko-2 volatility
     public int Wins { get; set; }
     public int Losses { get; set; }
+    public int Kills { get; set; }                  // total KO yang dilakukan
+    public int Deaths { get; set; }                 // total ter-KO
+    public int Assists { get; set; }
+    public int AccountXp { get; set; }              // dari semua main → Account Rank (nol efek kompetitif)
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 
@@ -54,6 +58,9 @@ public sealed class MatchPlayer
     public int Slot { get; set; }
     public int? ReportedScoreLeft { get; set; }
     public int? ReportedScoreRight { get; set; }
+    public int ReportedKills { get; set; }
+    public int ReportedDeaths { get; set; }
+    public int ReportedAssists { get; set; }
     public bool IsWinner { get; set; }
     public int RatingDelta { get; set; }
 }
