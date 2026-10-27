@@ -160,6 +160,67 @@ public class ApiTests(ApiFactory factory) : IClassFixture<ApiFactory>
         Assert.NotEqual(s1.GetProperty("slot").GetInt32(), m2.GetProperty("slot").GetInt32());
     }
 
+    private async Task<HttpClient> RegisterAsync(string username, string password, string? name = null)
+    {
+        var client = factory.CreateClient();
+        var res = await client.PostAsJsonAsync("/api/auth/register", new { username, password, displayName = name ?? username });
+        res.EnsureSuccessStatusCode();
+        var json = await res.Content.ReadFromJsonAsync<JsonElement>(Web);
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", json.GetProperty("token").GetString());
+        return client;
+    }
+
+    [Fact]
+    public async Task Register_Then_Me_ReturnsProfileWithRankTier()
+    {
+        var client = await RegisterAsync("acct_alice", "secret123", "AliceA");
+        var me = await client.GetFromJsonAsync<JsonElement>("/api/me");
+        Assert.Equal("acct_alice", me.GetProperty("username").GetString());
+        Assert.Equal("AliceA", me.GetProperty("displayName").GetString());
+        Assert.Equal("Silver", me.GetProperty("rankTier").GetString()); // start 1500 = Silver
+        Assert.Equal(0, me.GetProperty("matchesPlayed").GetInt32());
+        Assert.Equal(0, me.GetProperty("faction").GetInt32());
+    }
+
+    [Fact]
+    public async Task Register_DuplicateUsername_Conflict()
+    {
+        await RegisterAsync("dup_user", "secret123");
+        var res = await factory.CreateClient()
+            .PostAsJsonAsync("/api/auth/register", new { username = "dup_user", password = "another123", displayName = "X" });
+        Assert.Equal(HttpStatusCode.Conflict, res.StatusCode);
+    }
+
+    [Fact]
+    public async Task Login_CorrectAndWrongPassword()
+    {
+        await RegisterAsync("login_bob", "rightpass1");
+        var client = factory.CreateClient();
+        var ok = await client.PostAsJsonAsync("/api/auth/login", new { username = "login_bob", password = "rightpass1" });
+        Assert.Equal(HttpStatusCode.OK, ok.StatusCode);
+        var bad = await client.PostAsJsonAsync("/api/auth/login", new { username = "login_bob", password = "wrongpass" });
+        Assert.Equal(HttpStatusCode.Unauthorized, bad.StatusCode);
+    }
+
+    [Fact]
+    public async Task Register_ShortPassword_BadRequest()
+    {
+        var res = await factory.CreateClient()
+            .PostAsJsonAsync("/api/auth/register", new { username = "shortpw_user", password = "123", displayName = "X" });
+        Assert.Equal(HttpStatusCode.BadRequest, res.StatusCode);
+    }
+
+    [Fact]
+    public async Task SetFaction_UpdatesProfile()
+    {
+        var client = await RegisterAsync("faction_user", "secret123");
+        var res = await client.PostAsJsonAsync("/api/me/faction", new { faction = 1 });
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var me = await client.GetFromJsonAsync<JsonElement>("/api/me");
+        Assert.Equal(1, me.GetProperty("faction").GetInt32());
+    }
+
     [Fact]
     public async Task Health_IsOk()
     {

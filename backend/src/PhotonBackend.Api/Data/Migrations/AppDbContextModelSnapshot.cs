@@ -109,7 +109,6 @@ namespace PhotonBackend.Api.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("DeviceId")
-                        .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
 
@@ -118,14 +117,24 @@ namespace PhotonBackend.Api.Data.Migrations
                         .HasMaxLength(24)
                         .HasColumnType("character varying(24)");
 
+                    b.Property<int>("Faction")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Losses")
                         .HasColumnType("integer");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("text");
 
                     b.Property<int>("Rating")
                         .HasColumnType("integer");
 
                     b.Property<double>("Rd")
                         .HasColumnType("double precision");
+
+                    b.Property<string>("Username")
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
 
                     b.Property<double>("Volatility")
                         .HasColumnType("double precision");
@@ -139,6 +148,9 @@ namespace PhotonBackend.Api.Data.Migrations
                         .IsUnique();
 
                     b.HasIndex("Rating");
+
+                    b.HasIndex("Username")
+                        .IsUnique();
 
                     b.ToTable("Players");
                 });

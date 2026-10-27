@@ -12,9 +12,11 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     {
         b.Entity<Player>(e =>
         {
-            e.HasIndex(x => x.DeviceId).IsUnique();
+            e.HasIndex(x => x.DeviceId).IsUnique();   // nullable: Postgres izinkan banyak NULL (akun username)
+            e.HasIndex(x => x.Username).IsUnique();
             e.HasIndex(x => x.Rating);
             e.Property(x => x.DeviceId).HasMaxLength(128);
+            e.Property(x => x.Username).HasMaxLength(24);
             e.Property(x => x.DisplayName).HasMaxLength(24);
         });
 

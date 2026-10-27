@@ -3,8 +3,11 @@ namespace PhotonBackend.Api.Data;
 public sealed class Player
 {
     public Guid Id { get; set; } = Guid.NewGuid();
-    public string DeviceId { get; set; } = "";
+    public string? DeviceId { get; set; }          // guest (anon device); null untuk akun username
+    public string? Username { get; set; }           // akun terdaftar; null untuk guest
+    public string? PasswordHash { get; set; }       // hash (ASP.NET PasswordHasher)
     public string DisplayName { get; set; } = "";
+    public int Faction { get; set; }                // 0 none, 1 ORDE, 2 LEGION
     public int Rating { get; set; }
     public double Rd { get; set; } = 350.0;        // Glicko-2 rating deviation (keyakinan)
     public double Volatility { get; set; } = 0.06; // Glicko-2 volatility
